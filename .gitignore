@@ -7,3 +7,4 @@ auth/client_secret.json
 .idea/vcs.xml
 .idea/workspace.xml
 .idea/SmartCalendar.iml
+projects.ini
