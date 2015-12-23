@@ -34,14 +34,13 @@ class Event:
     def get_event(self):
         return self._event
 
-    def set_summary(self, summary):
-        self._event['summary'] = summary
-
-    def set_times(self, period):
-        start, end = period
-        fmt = '%Y-%m-%dT%H:%M:%S+01:00'
-        self._event['start']['dateTime'] = datetime.datetime.strftime(start, fmt)
-        self._event['end']['dateTime'] = datetime.datetime.strftime(end, fmt)
-
-    def set_description(self, description):
-        self._event['description'] = description
+    def set_event_information(self, summary, period, description):
+        if summary:
+            self._event['summary'] = summary
+        if period:
+            start, end = period
+            fmt = '%Y-%m-%dT%H:%M:%S+01:00'
+            self._event['start']['dateTime'] = datetime.datetime.strftime(start, fmt)
+            self._event['end']['dateTime'] = datetime.datetime.strftime(end, fmt)
+        if description:
+            self._event['description'] = description
