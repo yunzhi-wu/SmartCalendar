@@ -9,16 +9,31 @@ from oauth2client import tools
 
 import configparser
 
-from project import Project
 from event import Event
-
-
 import copy
 import datetime
 
+debug_level = 0
+debug_level_info = 1
+debug_level_verbose = 2
+debug_level_debug = 3
+
 try:
     import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+    parser = argparse.ArgumentParser(parents=[tools.argparser])
+    parser.add_argument("-i", "--info", action="store_true",
+                        help="print basic information")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="increase output verbosity")
+    parser.add_argument("-d", "--debug", action="store_true",
+                        help="display debug information")
+    flags = parser.parse_args()
+    if flags.info:
+        debug_level = debug_level_info
+    if flags.verbose:
+        debug_level = debug_level_verbose
+    elif flags.debug:
+        debug_level = debug_level_debug
 except ImportError:
     flags = None
 
@@ -48,8 +63,6 @@ def get_credentials():
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
                                    'calendar-python.json')
-
-    print(credential_path)
     store = oauth2client.file.Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
@@ -129,8 +142,6 @@ def find_available_periods(events):
     today_start = datetime.datetime.combine(today, morning)
     today_end = datetime.datetime.combine(today, evening)
 
-    print('today: {0}  -  {1}'.format(today_start, today_end))
-
     start = today_start
     for period in merged_periods:
         end = period[0]
@@ -156,7 +167,7 @@ def get_event(service):
     tomorrow = today + datetime.timedelta(days=1)
     end = tomorrow.strftime('%Y-%m-%dT%H:%M:%S.000000Z')
 
-    print('Getting the upcoming 10 events, now it is {0}, end is {1}'.format(start, end))
+    print('Getting the existing events:')
     event_results = service.events().list(
         calendarId='primary', timeMin=start, timeMax=end, maxResults=10, singleEvents=True,
         orderBy='startTime').execute()
@@ -199,17 +210,32 @@ def scheduling(available_periods, projects):
             importance = 0
             name = ''
             for project in projects:
+                print_level(debug_level_debug, 'Look at project "{0}": scheduled: {1}'
+                            .format(project, scheduled_projects[project]))
                 if not scheduled_projects[project]:
                     attributes = {key: value for (key, value) in projects.items(project)}  # setup a dictionary
+
                     emergency_project = int(attributes.get('emergency'))
                     importance_project = int(attributes.get('importance'))
+
+                    print_level(debug_level_debug,
+                                'Look at project "{0}": emergency_project: {1}, importance_project: {2}'
+                                .format(project, emergency_project, importance_project))
+
                     if emergency < emergency_project:
                         emergency = emergency_project
+                        importance = importance_project
                         name = project
                     elif emergency == emergency_project and importance < importance_project:
                         importance = importance_project
                         name = project
-            print('scheduling: selected project: {0}'.format(name))
+
+                    print_level(debug_level_debug, 'Updated: emergency: {0}, importance: {1}, name: {2}'
+                                .format(emergency, importance, name))
+
+            print_level(debug_level_verbose, 'scheduling: selected project: emergency {0}, importance {1}, {2}'
+                        .format(emergency, importance, name))
+            print_level(debug_level_debug, '\n')
             scheduled_projects[name] = True
 
             event = Event()
@@ -217,16 +243,25 @@ def scheduling(available_periods, projects):
                                         period=period_assign,
                                         description=projects[name].get('description'))
             events.append(event.get_event())
-    print(events)
+
+    print_level(debug_level_debug, events)
     return events
 
 
-def main():
-    """Shows basic usage of the Google Calendar API.
+def print_level(level, *argv):
+    global debug_level
+    if level <= debug_level:
+        print(*argv)
 
+
+def main():
+    """
+    Shows basic usage of the Google Calendar API.
     Get the upcoming ten events
     Insert an event
     """
+    global debug_level
+
     service = get_service()
     events = get_event(service)
 
@@ -234,7 +269,7 @@ def main():
 
     projects = get_projects()
     for project in projects:
-        print(project, projects.items(project))
+        print(projects.items(project), project)
 
     # TODO: merge events and projects into a unified database
 
