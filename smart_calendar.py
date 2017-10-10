@@ -1,31 +1,10 @@
-from __future__ import print_function
-import httplib2
-import os
-
-from apiclient import discovery
-import oauth2client
-from oauth2client import client
-from oauth2client import tools
-
 import configparser
 
 from project import Project
 from event import Event
 
-
-
 import datetime
 
-try:
-    import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-except ImportError:
-    flags = None
-
-#SCOPES ='https://www.googleapis.com/auth/calendar.readonly'
-SCOPES = 'https://www.googleapis.com/auth/calendar'
-CLIENT_SECRET_FILE = 'auth\client_secret.json'
-APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
 def create_event(service):
     event = {
@@ -59,34 +38,6 @@ def create_event(service):
     event = service.events().insert(calendarId='primary', body=event).execute()
     print('Event created: %s'.format(event.get('htmlLink')))
 
-def get_credentials():
-    """Gets valid user credentials from storage.
-
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
-
-    Returns:
-        Credentials, the obtained credential.
-    """
-    home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials')
-    if not os.path.exists(credential_dir):
-        os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir,
-                                   'calendar-python.json')
-
-    print(credential_path)
-    store = oauth2client.file.Storage(credential_path)
-    credentials = store.get()
-    if not credentials or credentials.invalid:
-        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
-        flow.user_agent = APPLICATION_NAME
-        if flags:
-            credentials = tools.run_flow(flow, store, flags)
-        else: # Needed only for compatibility with Python 2.6
-            credentials = tools.run(flow, store)
-        print('Storing credentials to ' + credential_path)
-    return credentials
 
 def get_service():
     """
@@ -267,9 +218,9 @@ def scheduling(available_periods, projects):
 
     return events
 
+
 def main():
     """Shows basic usage of the Google Calendar API.
-
     Get the upcoming ten events
     Insert an event
     """
@@ -277,7 +228,7 @@ def main():
     events = get_event(service)
 
     available_periods = find_available_periods(events)
-    #create_event(service)
+    # create_event(service)
     projects = get_projects()
     for project in projects:
         print(project, projects.items(project))
