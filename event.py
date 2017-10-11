@@ -39,9 +39,11 @@ class Event:
 
     def set_times(self, period):
         start, end = period
-        fmt = '%Y-%m-%dT%H:%M:%S+01:00'
+        fmt = '%Y-%m-%dT%H:%M:%S+02:00'
         self._event['start']['dateTime'] = datetime.datetime.strftime(start, fmt)
         self._event['end']['dateTime'] = datetime.datetime.strftime(end, fmt)
+        # print(self._event['start'])
+        # print(self._event['end'])
 
     def set_description(self, description):
         self._event['description'] = description
