@@ -2,7 +2,19 @@ This calendar can help plan according to targets and histories.
 The targets give the direction, while the histories help makes the plan more practical.
 Machine learning will be used:
 1. Input: targets and history.
-2. Output: pratical daily schedular.
+2. Output: practical daily calendar.
 
-Some keyworkds in description:
+Some keywords in description:
 "Created by SmartCalendar": this event is created by SmartCalendar, and SmartCalendar can safely edit this event.
+"Done", "完成", "85%"，它们表示这个日程是否已经执行，以及执行的时间长短百分比。
+
+Open questions:
+1. How to get history?
+   Get the history from calendar as old as possible.
+2. Should the history be saved to somewhere?
+   The history should be saved to somewhere once it is fetched from google, since someone can remove events anytime.
+   But people can add events also, so need try to fetch event from google calendar for those events added later, and
+   merge any new events into "database"
+3. What is a good history? Planned and executed.
+   A good history is an executed event in calendar. It is an positive event.
+4. How to describe a target?

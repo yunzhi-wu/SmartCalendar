@@ -6,7 +6,7 @@ class Event:
         self._event = {
             'summary': 'Please give me a summary',
             'location': '',
-            'description': '',
+            'description': 'Created by SmartCalendar',
                 'start': {
                     'dateTime': '1000-00-00T00:00:00+01:00',
                     'timeZone': 'Europe/Stockholm',
