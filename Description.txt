@@ -1,0 +1,8 @@
+This calendar can help plan according to targets and histories.
+The targets give the direction, while the histories help makes the plan more practical.
+Machine learning will be used:
+1. Input: targets and history.
+2. Output: pratical daily schedular.
+
+Some keyworkds in description:
+"Created by SmartCalendar": this event is created by SmartCalendar, and SmartCalendar can safely edit this event.
