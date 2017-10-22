@@ -5,16 +5,16 @@ from apiclient import discovery
 
 import datetime
 
-from credentials import get_credentials
+from credentials import get_credentials_calendar
 
 
-def main():
+def test_credential_calendar():
     """Shows basic usage of the Google Calendar API.
 
     Creates a Google Calendar API service object and outputs a list of the next
     10 events on the user's calendar.
     """
-    credentials = get_credentials()
+    credentials = get_credentials_calendar()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
 
@@ -30,6 +30,10 @@ def main():
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
+
+
+def main():
+    test_credential_calendar()
 
 
 if __name__ == '__main__':

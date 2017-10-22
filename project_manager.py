@@ -85,11 +85,11 @@ class ProjectManager:
                                     project, emergency, importance))
 
 
-def main():
+def test_get_project_from_configure_file():
     pm = ProjectManager()
     pm.get_projects_from_configure_file()
     pm.show_project_attributes()
 
 
 if __name__ == '__main__':
-    main()
+    test_get_project_from_configure_file()

@@ -8,7 +8,8 @@ from debug_print import print_level
 from debug_print import debug_level_info
 from debug_print import debug_level_debug
 
-from credentials import get_service
+from credentials import get_calendar_service
+
 
 class ResourceManager:
 
@@ -33,13 +34,12 @@ class ResourceManager:
         return
 
     def read_calendar(self):
-        service = get_service()
+        service = get_calendar_service()
 
-        #now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
         now = datetime.datetime.utcnow()
         print('Getting event within one month nearby')
-        time_min = (now - datetime.timedelta(days=15)).isoformat() + 'Z' # 'Z' indicates UTC time
-        time_max = (now + datetime.timedelta(days=14)).isoformat() + 'Z' # 'Z' indicates UTC time
+        time_min = (now - datetime.timedelta(days=15)).isoformat() + 'Z'  # 'Z' indicates UTC time
+        time_max = (now + datetime.timedelta(days=14)).isoformat() + 'Z'  # 'Z' indicates UTC time
         eventsResult = service.events().list(
             calendarId='primary', timeMin=time_min, timeMax=time_max, singleEvents=True,
             orderBy='startTime').execute()
@@ -95,11 +95,59 @@ class ResourceManager:
         print(str)
 
 
-def main():
+def print_total_week_hours():
+    sleeping = 8 * 7
+    work_hours = 8 * 5
+    morning_hours = 1 * 7  # breakfast, wash face and rinse mouth
+    on_the_way = 1 * 5  # send tong to school
+    evening_hours = 1 * 7  # dinner
+
+    basketball = 1.5
+    chinese_school = 3
+    swimming = 2
+    rhythm = 2
+
+    routine_activities = sleeping + work_hours + morning_hours + \
+        on_the_way + evening_hours + basketball + chinese_school + \
+        swimming + rhythm
+
+    print("Hours in a week, total {0}, routine hours {1}: {2}%".format(24 * 7, routine_activities,
+                                                                       int(routine_activities / (24 * 7) * 100)))
+
+    print("Free hours {1}: {2}%".format(24 * 7, 24 * 7 - routine_activities,
+                                        int((24 * 7 - routine_activities) / (24 * 7) * 100)))
+
+    daily_family_hours = 1 * 5
+
+    weekend_family_hours = 3 * 2
+
+    house_work_hours = 3
+
+    teaching_chinese = 3
+
+    family_hours = daily_family_hours + weekend_family_hours + house_work_hours + teaching_chinese
+
+    print("Family hours {0}".format(family_hours))
+
+    meet_friends = 4
+
+    english = 10
+
+    swedish = 10
+
+    it = 10
+
+    learning_hours = meet_friends + english + swedish + it
+
+    print("Family hours {0}".format(learning_hours))
+
+
+def test_resource_manager():
     rm = ResourceManager()
     rm.show_resource_day(datetime.date.today().isoformat())
     rm.show_resource()
 
 
 if __name__ == '__main__':
-    main()
+    print_total_week_hours()
+    #test_resource_manager()
