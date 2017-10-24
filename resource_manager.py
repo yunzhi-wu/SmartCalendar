@@ -10,6 +10,16 @@ from debug_print import debug_level_debug
 
 from credentials import get_calendar_service
 
+'''
+This resource manager is responsible for time
+It needs have a resource table.
+The resource table is initialized by reading existing calendar,
+and is updated by other managers.
+
+This manager will not handle any events, its reading from existing calendar
+is just for the resource initialization
+'''
+
 
 class ResourceManager:
 
@@ -19,7 +29,6 @@ class ResourceManager:
         self._existing_events_in_calendar = dict()
 
         self.init_month_resource()
-        self.read_database()
         self.read_calendar()
         self.update_resource()
 
@@ -29,9 +38,6 @@ class ResourceManager:
             self._month_resource[date] = list()
             for j in range(0, 48):
                 self._month_resource[date].append(list())
-
-    def read_database(self):
-        return
 
     def read_calendar(self):
         service = get_calendar_service()
@@ -150,4 +156,4 @@ def test_resource_manager():
 
 if __name__ == '__main__':
     print_total_week_hours()
-    #test_resource_manager()
+    test_resource_manager()

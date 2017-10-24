@@ -5,6 +5,18 @@ from debug_print import print_level
 from debug_print import debug_level_info
 from debug_print import debug_level_debug
 
+'''
+Project manager saves information about project.
+It can read project from configuration files,
+and in the future, it can judge if an event belongs to an existing project or not.
+
+Each project has a dynamic priority, and provide api for getting the project with
+highest priority
+
+All the events are read so that this manager knows how much hours are spent on each project.
+All the events are saved also.
+'''
+
 
 # todo: save the Project Manager's internal database to a file
 # todo: merge the with new configuration file ...
