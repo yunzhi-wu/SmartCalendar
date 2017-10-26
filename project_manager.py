@@ -1,5 +1,9 @@
 import configparser
 from operator import itemgetter
+from multiprocessing import Process
+import pickle
+import os
+from pathlib import Path
 
 from debug_print import print_level
 from debug_print import debug_level_info
@@ -20,11 +24,34 @@ All the events are saved also.
 
 # todo: save the Project Manager's internal database to a file
 # todo: merge the with new configuration file ...
-class ProjectManager:
-
-    def __init__(self, configure_file='projects.ini'):
+class ProjectManager(Process):
+    def __init__(self, configure_file='projects.ini', if_resource=None):
+        Process.__init__(self)
+        self._if_resource = if_resource
         self._configure_file = configure_file
         self._configured_projects = None
+        self._existing_events_in_calendar = list()
+        self._existing_events_ids = list()
+        self._database_file = "event_database.p"
+        self.read_database()
+        print_level(debug_level_debug, "Project Manager initialization done")
+
+    def read_database(self):
+        cnt = 0
+        database_file = Path(self._database_file)
+        if not database_file.exists():
+            return
+        f = open(self._database_file, 'rb')
+        while 1:
+            try:
+                event = pickle.load(f)
+                self._existing_events_ids.append(event.get('id'))
+                self._existing_events_in_calendar.append(event)
+                cnt += 1
+            except EOFError:
+                break
+        f.close()
+        print_level(debug_level_debug, "{0} items read from database file".format(cnt))
 
     def get_projects_from_configure_file(self):
         config = configparser.ConfigParser()
@@ -36,6 +63,20 @@ class ProjectManager:
             projects_attributes[project] = attributes
 
         self._configured_projects = projects_attributes
+
+    def run(self):
+        print_level(debug_level_debug, "Project manager is running")
+        while True:
+            event = self._if_resource.recv()
+            if type(event) is dict:
+                event_id = event.get("id")
+                if event_id not in self._existing_events_ids:
+                    self._existing_events_ids.append(event_id)
+                    self._existing_events_in_calendar.append(event)
+                    print_level(debug_level_debug, "An event is added into database")
+                    f = open(self._database_file, 'ab')
+                    pickle.dump(event, f)
+                    f.close()
 
     def show_project_attributes(self):
         total_hours = 0

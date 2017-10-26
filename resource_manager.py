@@ -3,6 +3,9 @@ import datetime
 from pprint import pprint
 from dateutil import parser
 import time
+import sys
+from multiprocessing import Process, Pipe
+from event import Event
 
 from debug_print import print_level
 from debug_print import debug_level_info
@@ -21,9 +24,11 @@ is just for the resource initialization
 '''
 
 
-class ResourceManager:
+class ResourceManager(Process):
 
-    def __init__(self, resource_name='time'):
+    def __init__(self, resource_name='time', if_projects=None):
+        Process.__init__(self)
+        self._if_projects = if_projects
         self._resource_name = resource_name
         self._month_resource = dict()
         self._existing_events_in_calendar = dict()
@@ -50,6 +55,8 @@ class ResourceManager:
             calendarId='primary', timeMin=time_min, timeMax=time_max, singleEvents=True,
             orderBy='startTime').execute()
         self._existing_events_in_calendar = eventsResult.get('items', [])
+        print_level(debug_level_debug, "Read {0} events from calendar".
+                    format(len(self._existing_events_in_calendar)))
 
         return
 
@@ -99,6 +106,20 @@ class ResourceManager:
             else:
                 str += '*'
         print(str)
+
+    def update_project_manager(self):
+        if self._if_projects:
+            print_level(debug_level_debug, "Sending events_in_calendar_one_month to project manager")
+            #  self._if_projects.send(self._existing_events_in_calendar)
+            for event in self._existing_events_in_calendar:
+                #  print_level(debug_level_debug, "Size of object: {0}".format(sys.getsizeof(event)))
+                self._if_projects.send(event)
+            print_level(debug_level_debug, "Sending is done")
+
+    def run(self):
+        self.update_project_manager()
+        while True:
+            time.sleep(100)
 
 
 def print_total_week_hours():
