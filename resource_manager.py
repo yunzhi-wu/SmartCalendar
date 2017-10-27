@@ -64,11 +64,17 @@ class ResourceManager(Process):
         for event in self._existing_events_in_calendar:
             start_time_str = event.get("start").get("dateTime")
             end_time_str = event.get("end").get("dateTime")
-            start_time = time.strptime(start_time_str[:19], "%Y-%m-%dT%H:%M:%S")
-            end_time = time.strptime(end_time_str[:19], "%Y-%m-%dT%H:%M:%S")
-            start_day = start_time_str[:10]  # format is like "2017-10-10"
-            start_time_slot = int(start_time.tm_hour * 2 + start_time.tm_min / 30)  # 0:30, slot is 1
-            end_time_slot = int(end_time.tm_hour * 2 + end_time.tm_min / 30 - 1)  # 1:00, last slot is 1
+            if start_time_str:
+                start_day = start_time_str[:10]  # format is like "2017-10-10"
+                start_time = time.strptime(start_time_str[:19], "%Y-%m-%dT%H:%M:%S")
+                end_time = time.strptime(end_time_str[:19], "%Y-%m-%dT%H:%M:%S")
+                start_time_slot = int(start_time.tm_hour * 2 + start_time.tm_min / 30)  # 0:30, slot is 1
+                end_time_slot = int(end_time.tm_hour * 2 + end_time.tm_min / 30 - 1)  # 1:00, last slot is 1
+            else:
+                start_day = event.get("start").get("date")  # all day event
+                start_time_slot = 0
+                end_time_slot = 47
+
             for slot in range(start_time_slot, end_time_slot + 1):
                 self._month_resource[start_day][slot].append(event)
 
@@ -110,9 +116,7 @@ class ResourceManager(Process):
     def update_project_manager(self):
         if self._if_projects:
             print_level(debug_level_debug, "Sending events_in_calendar_one_month to project manager")
-            #  self._if_projects.send(self._existing_events_in_calendar)
             for event in self._existing_events_in_calendar:
-                #  print_level(debug_level_debug, "Size of object: {0}".format(sys.getsizeof(event)))
                 self._if_projects.send(event)
             print_level(debug_level_debug, "Sending is done")
 
