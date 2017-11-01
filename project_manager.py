@@ -14,11 +14,29 @@ Project manager saves information about project.
 It can read project from configuration files,
 and in the future, it can judge if an event belongs to an existing project or not.
 
+All the events are read so that this manager knows how much hours are spent on each project.
+All the events are saved also.
+
 Each project has a dynamic priority, and provide api for getting the project with
 highest priority
 
-All the events are read so that this manager knows how much hours are spent on each project.
-All the events are saved also.
+What factors decide the priority of a project?
+1. Importance and Emergency:
+                | very urgent      urgent       not urgent
+--------------------------------------------------------
+very important  |     900           700           500*
+     important  |     800           600           400*
+ not important  |     300           200           100
+
+2. Number of hours planned and spent on a project.
+The percentage (ratio) of unplanned hours to target hours.
+E.g., project has a target hours per week is 10 hours.When 6 hours are planned,priority
+is 40; when 10 hours are planned, priority is 0; when 20 hours planned, priority is -100.
+
+When to update the priority of projects?
+1. When projects are updated
+2. When plans are updated
+
 '''
 
 
@@ -56,6 +74,9 @@ class ProjectManager(Process):
         print_level(debug_level_debug, "Project Manager initialization done")
 
     def update_project_database_all(self):
+        # remove the old database file
+        f = open(self._database_projects, 'w')
+        f.close()
         for project in self._projects:
             self.update_project_database(project)
 
@@ -93,10 +114,40 @@ class ProjectManager(Process):
         read_output = self.read_database_execute(self._database_projects)
         if read_output:
             for project in read_output:
-                name = project.get['name']
+                name = project.get('name')
                 if name not in self._projects_names:
+                    # a project from database, but not exist in configuration
                     self._projects_names.append(project)
                     self._projects.append(project)
+                # else:
+                    # a project exist both in configure and in database
+                    # use the priority from the configuration file
+
+    @staticmethod
+    def get_project_priority_by_configure(project):
+        importance = project.get('importance')
+        emergency = project.get('emergency')
+        configure = [importance, emergency]
+        if configure == ['3', '3']:
+            return 900
+        elif configure == ['2', '3']:
+            return 800
+        elif configure == ['1', '3']:
+            return 300
+        elif configure == ['3', '2']:
+            return 700
+        elif configure == ['2', '2']:
+            return 600
+        elif configure == ['1', '2']:
+            return 200
+        elif configure == ['3', '1']:
+            return 500
+        elif configure == ['2', '1']:
+            return 400
+        elif configure == ['2', '1']:
+            return 100
+        else:
+            return 0
 
     def get_projects_from_configure_file(self):
         config = configparser.ConfigParser()
@@ -106,6 +157,7 @@ class ProjectManager(Process):
             attributes = {key: value for (key, value) in config.items(project_name)}  # setup a dictionary
             project = attributes
             project['name'] = project_name
+            project['priority'] = self.get_project_priority_by_configure(project)
             self._projects_names.append(project_name)
             self._projects.append(project)
 
@@ -122,6 +174,30 @@ class ProjectManager(Process):
                     f = open(self._database_events, 'ab')
                     pickle.dump(event, f)
                     f.close()
+
+    def check_project_priority(self):
+        for project in self._projects:
+            importance = project.get('importance')
+            emergency = project.get('emergency')
+            configure = [importance, emergency]
+            if configure == ['3', '3']:
+                assert(900 <= project.get('priority') < 1000)
+            elif configure == ['2', '3']:
+                assert(800 <= project.get('priority') < 900)
+            elif configure == ['1', '3']:
+                assert(300 <= project.get('priority') < 400)
+            elif configure == ['3', '2']:
+                assert(700 <= project.get('priority') < 800)
+            elif configure == ['2', '2']:
+                assert(600 <= project.get('priority') < 700)
+            elif configure == ['1', '2']:
+                assert(200 <= project.get('priority') < 300)
+            elif configure == ['3', '1']:
+                assert(500 <= project.get('priority') < 600)
+            elif configure == ['2', '1']:
+                assert(400 <= project.get('priority') < 500)
+            elif configure == ['2', '1']:
+                assert(100 <= project.get('priority') < 200)
 
     def show_project_attributes(self):
         total_hours = 0
@@ -188,6 +264,7 @@ class ProjectManager(Process):
 def test_get_project_from_configure_file():
     pm = ProjectManager()
     pm.show_project_attributes()
+    pm.check_project_priority()
 
 
 if __name__ == '__main__':
