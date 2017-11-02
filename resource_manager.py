@@ -32,10 +32,12 @@ class ResourceManager(Process):
         self._resource_name = resource_name
         self._month_resource = dict()
         self._existing_events_in_calendar = dict()
+        self._stat = dict()
 
         self.init_month_resource()
         self.read_calendar()
         self.update_resource()
+        self.hours_statistics()
 
     def init_month_resource(self):
         for i in range(-15, 15):
@@ -79,6 +81,30 @@ class ResourceManager(Process):
                 self._month_resource[start_day][slot].append(event)
 
         return
+
+    def hours_statistics(self):
+        self._stat['recursive'] = 0
+        today = datetime.date.today()
+        year, week, day = datetime.date.isocalendar(today)
+
+        recursive_hours = 0
+        for i in range(1, 8):
+            day_offset_in_week = i - day
+            a_date = today + datetime.timedelta(days=day_offset_in_week)
+            resource = self._month_resource.get(a_date.isoformat())
+            for half_hour in range(0, 48):
+                if resource[half_hour]:
+                    for event in resource[half_hour]:
+                        if event.get('recurringEventId'):
+                            recursive_hours += 0.5
+                            break
+
+        self._stat['recursive'] = recursive_hours
+        print_level(debug_level_debug, "This week's recursive hours are: {0}".format( recursive_hours))
+
+    def check_recursive_hours(self):
+        if self._stat.get('recursive') < 60:
+            print("Warning: recursive time is little, add more")
 
     def get_timeslot(self, length):
         return
@@ -127,6 +153,7 @@ class ResourceManager(Process):
 
 
 def print_total_week_hours():
+    total_hours = (24 - 8) * 7
     sleeping = 8 * 7
     work_hours = 8 * 5
     morning_hours = 1 * 7  # breakfast, wash face and rinse mouth
@@ -138,15 +165,15 @@ def print_total_week_hours():
     swimming = 2
     rhythm = 2
 
-    routine_activities = sleeping + work_hours + morning_hours + \
+    routine_activities = work_hours + morning_hours + \
         on_the_way + evening_hours + basketball + chinese_school + \
         swimming + rhythm
 
-    print("Hours in a week, total {0}, routine hours {1}: {2}%".format(24 * 7, routine_activities,
-                                                                       int(routine_activities / (24 * 7) * 100)))
+    print("Hours in a week, total {0}, routine hours {1}: {2}%".format(total_hours, routine_activities,
+                                                                       int(routine_activities / total_hours * 100)))
 
-    print("Free hours {1}: {2}%".format(24 * 7, 24 * 7 - routine_activities,
-                                        int((24 * 7 - routine_activities) / (24 * 7) * 100)))
+    print("Free hours {1}: {2}%".format(24 * 7, total_hours - routine_activities,
+                                        int((total_hours - routine_activities) / total_hours * 100)))
 
     daily_family_hours = 1 * 5
 
@@ -177,6 +204,7 @@ def test_resource_manager():
     rm = ResourceManager()
     rm.show_resource_day(datetime.date.today().isoformat())
     rm.show_resource()
+    rm.check_recursive_hours()
 
 
 if __name__ == '__main__':

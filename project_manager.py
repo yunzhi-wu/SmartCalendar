@@ -218,8 +218,8 @@ class ProjectManager(Process):
                 if max_percentage < time_percentage:
                     max_percentage = time_percentage
                 project['time percentage'] = time_percentage
-                sorted_projects.append([project_name, project.get('emergency'), project.get('importance')])
-        sorted_projects.sort(key=itemgetter(1, 2), reverse=True)
+                sorted_projects.append([project_name, project.get('priority')])
+        sorted_projects.sort(key=itemgetter(1), reverse=True)
         print_level(debug_level_debug, 'Sorted_projects:')
         print_level(debug_level_debug, sorted_projects)
         print_level(debug_level_debug, '\n')
@@ -230,6 +230,7 @@ class ProjectManager(Process):
             project = self._projects[index]
             time_budget = project.get('time budget')
             time_percentage = project.get('time percentage')
+            priority = project.get('priority')
             emergency = project.get('emergency')
             importance = project.get('importance')
 
@@ -256,9 +257,10 @@ class ProjectManager(Process):
                 else:
                     prefix = '**********'
 
-                print_level(debug_level_info, '{0} {1:02d}% ({2:02d}/{3:02d}) of these time is for: {4} [{5},{6}]'
+                print_level(debug_level_info,
+                            '{0} {1:02d}% ({2:02d}/{3:02d}) of these time is for: {4} [{5},{6}], priority: {7}'
                             .format(prefix, time_percentage, int(time_budget), int(total_hours),
-                                    project_name, emergency, importance))
+                                    project_name, emergency, importance, priority))
 
 
 def test_get_project_from_configure_file():

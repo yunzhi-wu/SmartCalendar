@@ -18,3 +18,7 @@ Open questions:
 3. What is a good history? Planned and executed.
    A good history is an executed event in calendar. It is an positive event.
 4. How to describe a target?
+5. 有些任务天天都有，例如工作日上班。这些东西怎么处理？
+   最简单的办法就是把它们以“重复出现”的方式标记在日程上。
+   但是，如果某些日子不上班，怎么交互呢？把某一次人工删掉。（以后再优化。）
+
